@@ -5,6 +5,8 @@ Olá, me chamo Victor Vinícius!
 
 Este projeto consiste em uma aplicação web que permite aos usuários enviar uma imagem de comida para análise. Através de uma IA (Inteligência Artificial), a imagem é processada para determinar se contém comida e, em caso afirmativo, extrair a receita da comida identificada.
 
+****Para iniciar esse projeto, dentro do VS Code, precisa dar um comando "node server.js" e ai rodar o servidor localmente.****
+
 ## Tecnologias Utilizadas
 
 - Node.js
