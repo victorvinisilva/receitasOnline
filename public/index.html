@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Envio de Imagem para Análise</title>
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+    <header>
+        <h1>RECEITAS ONLINE</h1>
+        <p>Favor insira a imagem de uma comida que você queira saber a receita.</p>
+    </header>
+
+    <div class="container">
+        <form class="formulario" id="uploadForm" enctype="multipart/form-data">
+            <div class="input-file-container">
+                <input type="file" id="imagemInput" accept="image/*" required>
+            </div>
+            <button type="button" onclick="enviarImagem()">
+                <span id="btnText">Enviar para Análise da IA</span>
+                <span id="loadingSpinner" class="spinner"></span>
+            </button>
+        </form>
+    </div>
+
+    <div id="resposta" class="resposta">
+        <h3 class="resposta-titulo">Resposta da IA</h3>
+        <div class="resposta-conteudo" id="respostaConteudo"></div>
+    </div>
+    
+    <script>
+        async function enviarImagem() {
+            const arquivo = document.getElementById('imagemInput').files[0];
+            if (!arquivo) {
+                alert('Por favor, adicione uma imagem.');
+                return;
+            }
+            const formData = new FormData();
+            formData.append('imagem', arquivo);
+
+            try {
+                const response = await fetch('/processar-imagem', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const resultado = await response.json();
+                    if (resultado.receita) {
+                        mostrarReceita(resultado.receita);
+                    } else {
+                        mostrarMensagem('A imagem não contém comida. Por favor, envie outra imagem.');
+                    }
+                } else {
+                    console.error('Erro ao enviar a imagem para análise.');
+                }
+            } catch (error) {
+                console.error('Erro ao enviar a imagem:', error);
+            }
+        }
+
+        function mostrarReceita(receita) {
+            const respostaDiv = document.getElementById('respostaConteudo');
+            respostaDiv.innerHTML = ''; // Limpa o conteúdo anterior
+
+            // Divide a receita em linhas
+            const linhas = receita.split('\n');
+
+            // Variável para armazenar o tipo de formatação atual
+            let tipoFormatacao = '';
+
+            // Loop através de cada linha
+            linhas.forEach(linha => {
+                // Verifica se a linha começa com '##' para títulos
+                if (linha.startsWith('##')) {
+                    tipoFormatacao = 'titulo';
+                    respostaDiv.innerHTML += `<h4>${linha.substring(2)}</h4>`; // Exclui '##' do título
+                } 
+                // Verifica se a linha começa com '**' para subtítulos
+                else if (linha.startsWith('**')) {
+                    tipoFormatacao = 'subtitulo';
+                    respostaDiv.innerHTML += `<p><strong>${linha.substring(2)}</strong></p>`; // Exclui '**' do subtítulo
+                } 
+                // Adiciona as linhas normais com base no tipo de formatação atual
+                else {
+                    if (tipoFormatacao === 'subtitulo') {
+                        respostaDiv.innerHTML += `<p><strong>${linha}</strong></p>`;
+                    } else {
+                        respostaDiv.innerHTML += `<p>${linha}</p>`;
+                    }
+                }
+            });
+        }
+
+        function mostrarMensagem(mensagem) {
+            const respostaDiv = document.getElementById('resposta');
+            respostaDiv.innerHTML = `<p>${mensagem}</p>`;
+        }
+    </script>
+</body>
+</html>
